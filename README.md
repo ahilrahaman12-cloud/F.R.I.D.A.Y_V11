@@ -143,4 +143,4 @@ included as context automatically.
 | `GET /office` | Link-tile dashboard (office dock) |
 | `GET /api/links` | List saved link shortcuts |
 | `POST /api/links/save` | Save a link shortcut `{name, url}` |
-| `POST /api/links/open` | Open a saved link `{name}` |
+| `POST /api/links/open` | Open a saved link `{name}`. |
