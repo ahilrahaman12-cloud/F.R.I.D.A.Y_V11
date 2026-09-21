@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F.R.I.D.A.Y. Office Dock</title>
+    <style>
+        :root {
+            --primary: #00f0ff;
+            --primary-glow: rgba(0, 240, 255, 0.4);
+            --panel-bg: rgba(2, 16, 28, 0.75);
+            --panel-border: rgba(0, 240, 255, 0.35);
+            --font-family: 'Segoe UI', 'Consolas', monospace, sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: radial-gradient(circle at 50% 45%, #031c33 0%, #010a14 70%, #000 100%);
+            font-family: var(--font-family);
+            color: #fff;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .dock {
+            max-width: 720px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .dock-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .dock-title {
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: 4px;
+            color: var(--primary);
+            text-shadow: 0 0 16px var(--primary-glow);
+        }
+        .back-link {
+            color: var(--primary);
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-decoration: none;
+            border: 1px solid var(--panel-border);
+            padding: 6px 12px;
+            border-radius: 6px;
+            background: var(--panel-bg);
+            font-weight: 700;
+        }
+        .back-link:hover { background: rgba(0, 240, 255, 0.15); }
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 10px;
+            padding: 20px;
+            backdrop-filter: blur(16px);
+        }
+        .panel h2 {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            color: var(--primary);
+            margin-bottom: 14px;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+        .link-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+        }
+        .link-tile {
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            padding: 14px 10px;
+            text-align: center;
+            cursor: pointer;
+            background: rgba(0, 240, 255, 0.05);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #fff;
+            transition: all 0.25s;
+            word-break: break-word;
+        }
+        .link-tile:hover {
+            background: rgba(0, 240, 255, 0.18);
+            box-shadow: 0 0 16px var(--primary-glow);
+            transform: translateY(-2px);
+        }
+        .empty { font-size: 11px; opacity: 0.6; letter-spacing: 1px; }
+        .add-row { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+        .add-row input {
+            flex: 1;
+            min-width: 130px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--panel-border);
+            color: var(--primary);
+            font-family: var(--font-family);
+            font-size: 12px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            outline: none;
+        }
+        .add-row button {
+            border: 1px solid var(--primary);
+            background: rgba(0, 240, 255, 0.12);
+            color: var(--primary);
+            font-family: var(--font-family);
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        .add-row button:hover { background: var(--primary); color: #000; }
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(2, 16, 28, 0.95);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 11px;
+            letter-spacing: 1px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .toast.show { opacity: 1; }
+        #status-text {
+            text-align: center;
+            color: var(--primary);
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.7;
+        }
+
+        /* BOOT OVERLAY: health-checked initialization screen */
+        #boot-overlay {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.9s ease, visibility 0.9s ease;
+        }
+
+        #boot-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+        .boot-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            width: 90vw;
+            max-width: 420px;
+            text-align: center;
+            background: rgba(2, 16, 28, 0.7);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 30px 24px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.15);
+        }
+
+        .boot-rings {
+            position: relative;
+            width: 110px;
+            height: 110px;
+        }
+
+        .boot-ring {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 2px solid transparent;
+        }
+
+        .boot-ring.r1 { border-top-color: var(--primary); animation: bootSpin 1.6s linear infinite; }
+        .boot-ring.r2 { inset: 14px; border-bottom-color: rgba(0, 240, 255, 0.55); animation: bootSpin 2.2s linear infinite reverse; }
+        .boot-ring.r3 { inset: 28px; border-left-color: rgba(0, 240, 255, 0.3); animation: bootSpin 1.1s linear infinite; }
+        .boot-core {
+            position: absolute;
+            inset: 44px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #fff 0%, var(--primary) 45%, transparent 75%);
+            animation: bootPulse 1.4s ease-in-out infinite;
+        }
+
+        @keyframes bootSpin { to { transform: rotate(360deg); } }
+        @keyframes bootPulse { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+
+        #boot-title {
+            font-size: 17px;
+            font-weight: 800;
+            letter-spacing: 4px;
+            color: var(--primary);
+            text-shadow: 0 0 16px var(--primary-glow);
+        }
+
+        #boot-status {
+            font-family: 'Consolas', monospace;
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: rgba(255, 255, 255, 0.85);
+            text-transform: uppercase;
+            min-height: 15px;
+        }
+
+        .boot-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(0, 240, 255, 0.12);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .boot-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+            transition: width 0.15s linear;
+        }
+
+        #boot-percent {
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: 2px;
+        }
+
+        #boot-status.warn { color: #ffaa00; }
+        #boot-title.warn { color: #ffaa00; text-shadow: 0 0 16px rgba(255, 170, 0, 0.4); }
+    </style>
+</head>
+<body>
+    <!-- BOOT OVERLAY: reports real backend health from /api/health -->
+    <div id="boot-overlay">
+        <div class="boot-box">
+            <div class="boot-rings">
+                <div class="boot-ring r1"></div>
+                <div class="boot-ring r2"></div>
+                <div class="boot-ring r3"></div>
+                <div class="boot-core"></div>
+            </div>
+            <div id="boot-title">OFFICE DOCK</div>
+            <div id="boot-status">INITIALIZING</div>
+            <div class="boot-bar"><div class="boot-bar-fill" id="boot-fill"></div></div>
+            <div id="boot-percent">0%</div>
+        </div>
+    </div>
+
+    <div class="dock">
+        <div class="dock-header">
+            <div class="dock-title">F.R.I.D.A.Y. OFFICE DOCK</div>
+            <a class="back-link" href="/">← BACK TO CORE</a>
+        </div>
+
+        <div class="panel">
+            <h2>Saved Links</h2>
+            <div class="link-grid" id="link-grid"></div>
+            <div class="add-row">
+                <input type="text" id="link-name" placeholder="name (e.g. gmail)" maxlength="40">
+                <input type="text" id="link-url" placeholder="https://mail.google.com">
+                <button id="save-btn">Save Link</button>
+            </div>
+        </div>
+
+        <div id="status-text">OFFICE STANDBY</div>
+    </div>
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // -------------------------------------------------------------
+        // BOOT SEQUENCE: health-checked initialization
+        // -------------------------------------------------------------
+        (function bootSequence() {
+            const overlay = document.getElementById('boot-overlay');
+            const titleEl = document.getElementById('boot-title');
+            const statusEl = document.getElementById('boot-status');
+            const fillEl = document.getElementById('boot-fill');
+            const percentEl = document.getElementById('boot-percent');
+            if (!overlay) return;
+
+            const DURATION = 2600;
+            const start = performance.now();
+            let health = null;
+            let done = false;
+
+            fetch('/api/health')
+                .then(r => r.json())
+                .then(data => { health = data; })
+                .catch(() => { health = { status: 'OFFLINE', checks: {} }; });
+
+            function degraded() { return !health || health.status !== 'OPERATIONAL'; }
+
+            function verdict() {
+                if (!health) return 'OFFLINE - CHECK SERVER';
+                if (health.status === 'OPERATIONAL') return 'DOCK READY';
+                return 'DEGRADED MODE';
+            }
+
+            const steps = [
+                { at: 0,    text: () => 'CORE LINK ......... INITIALIZING' },
+                { at: 600,  text: () => 'CORE LINK ......... ' + (health ? 'ONLINE' : 'PROBING') },
+                { at: 1200, text: () => 'NEURAL ............ ' + (health ? (health.checks.gemini_key === 'ok' ? health.checks.model : 'KEY MISSING') : 'PROBING') },
+                { at: 1800, text: () => 'MEMORY ............ ' + (health ? (['ok', 'fallback'].includes(health.checks.memory_vault) ? 'SYNCED' : 'MISSING') : 'PROBING') },
+                { at: 2400, text: () => degraded() ? verdict() : 'SYSTEM CHECK ...... COMPLETE' }
+            ];
+
+            const played = new Set();
+            function frame(now) {
+                const elapsed = now - start;
+                const progress = Math.min(1, elapsed / DURATION);
+                fillEl.style.width = Math.floor(progress * 100) + '%';
+                percentEl.textContent = Math.floor(progress * 100) + '%';
+
+                steps.forEach((step, idx) => {
+                    if (elapsed >= step.at && !played.has(idx)) {
+                        statusEl.textContent = step.text();
+                        statusEl.classList.toggle('warn', degraded() && idx === steps.length - 1);
+                        played.add(idx);
+                    }
+                });
+
+                if (elapsed >= DURATION) {
+                    titleEl.textContent = verdict();
+                    titleEl.classList.toggle('warn', degraded());
+                    finish(degraded() ? 1700 : 500);
+                    return;
+                }
+                requestAnimationFrame(frame);
+            }
+
+            function finish(holdMs) {
+                if (done) return;
+                done = true;
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                    setTimeout(() => overlay.remove(), 1000);
+                }, holdMs);
+            }
+
+            requestAnimationFrame(frame);
+            // Failsafe handoff
+            setTimeout(() => finish(0), 6500);
+        })();
+
+        function showToast(text) {
+            const toast = document.getElementById('toast');
+            toast.textContent = text;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2200);
+        }
+
+        async function loadLinks() {
+            const grid = document.getElementById('link-grid');
+            grid.innerHTML = '';
+            try {
+                const res = await fetch('/api/links');
+                const data = await res.json();
+                const links = data.links || {};
+                const names = Object.keys(links);
+                if (names.length === 0) {
+                    grid.innerHTML = '<div class="empty">No links saved yet. Add one below.</div>';
+                    return;
+                }
+                names.sort().forEach(name => {
+                    const tile = document.createElement('div');
+                    tile.className = 'link-tile';
+                    tile.textContent = name;
+                    tile.title = links[name];
+                    tile.addEventListener('click', async () => {
+                        const r = await fetch('/api/links/open', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name })
+                        });
+                        const out = await r.json();
+                        showToast(out.message || out.error || 'Opened.');
+                    });
+                    grid.appendChild(tile);
+                });
+            } catch (e) {
+                grid.innerHTML = '<div class="empty">Could not reach the core.</div>';
+            }
+        }
+
+        document.getElementById('save-btn').addEventListener('click', async () => {
+            const name = document.getElementById('link-name').value.trim();
+            const url = document.getElementById('link-url').value.trim();
+            if (!name || !url) { showToast('Name and URL required.'); return; }
+            const res = await fetch('/api/links/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, url })
+            });
+            const data = await res.json();
+            showToast(data.message || data.error || 'Saved.');
+            document.getElementById('link-name').value = '';
+            document.getElementById('link-url').value = '';
+            loadLinks();
+        });
+    </script>
+</body>
+</html>

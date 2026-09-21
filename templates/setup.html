@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F.R.I.D.A.Y. — Setup</title>
+    <style>
+        :root {
+            --primary: #00f0ff;
+            --primary-glow: rgba(0, 240, 255, 0.4);
+            --panel-bg: rgba(2, 16, 28, 0.75);
+            --panel-border: rgba(0, 240, 255, 0.35);
+            --font-family: 'Segoe UI', 'Consolas', monospace, sans-serif;
+            --danger-glow: rgba(255, 0, 85, 0.6);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: radial-gradient(circle at 50% 45%, #031c33 0%, #010a14 70%, #000 100%);
+            font-family: var(--font-family);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .panel {
+            width: 100%;
+            max-width: 560px;
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 34px 30px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.08);
+        }
+        .boot-line {
+            font-size: 10px;
+            letter-spacing: 4px;
+            color: var(--primary);
+            opacity: 0.75;
+            margin-bottom: 8px;
+        }
+        h1 {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            margin-bottom: 6px;
+            text-shadow: 0 0 18px var(--primary-glow);
+        }
+        .sub {
+            font-size: 12px;
+            opacity: 0.7;
+            line-height: 1.6;
+            margin-bottom: 22px;
+        }
+        label {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--primary);
+            opacity: 0.85;
+            margin-bottom: 8px;
+        }
+        input[type="password"], input[type="text"] {
+            width: 100%;
+            background: rgba(0, 20, 35, 0.9);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            color: #fff;
+            font-family: var(--font-family);
+            font-size: 13px;
+            letter-spacing: 1px;
+            padding: 13px 14px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 14px var(--primary-glow);
+        }
+        .row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 12px;
+        }
+        button {
+            flex: 1;
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.22), rgba(0, 240, 255, 0.08));
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            color: var(--primary);
+            cursor: pointer;
+            font-family: var(--font-family);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            padding: 13px 10px;
+            text-transform: uppercase;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        button:hover { background: rgba(0, 240, 255, 0.3); box-shadow: 0 0 20px var(--primary-glow); }
+        button:disabled { opacity: 0.45; cursor: wait; }
+        .toggle-show {
+            flex: 0 0 auto;
+            font-size: 10px;
+            letter-spacing: 2px;
+            opacity: 0.75;
+            background: none;
+            border: 1px solid var(--panel-border);
+            padding: 13px 14px;
+        }
+        .toggle-show:hover { background: rgba(0, 240, 255, 0.1); box-shadow: none; }
+        .msg {
+            display: none;
+            margin-top: 16px;
+            font-size: 12px;
+            line-height: 1.5;
+            padding: 11px 14px;
+            border-radius: 8px;
+        }
+        .msg.error { display: block; border: 1px solid var(--danger-glow); color: #ff6b9d; background: rgba(255, 0, 85, 0.08); }
+        .msg.info { display: block; border: 1px solid var(--panel-border); color: var(--primary); background: rgba(0, 240, 255, 0.07); }
+        .get-key {
+            display: inline-block;
+            margin-top: 18px;
+            font-size: 11px;
+            color: var(--primary);
+            opacity: 0.85;
+            text-decoration: none;
+            border-bottom: 1px dashed var(--panel-border);
+            padding-bottom: 2px;
+        }
+        .get-key:hover { opacity: 1; }
+        .scanline {
+            position: fixed; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary-glow), transparent);
+            animation: scan 7s linear infinite; pointer-events: none;
+        }
+        @keyframes scan { 0% { top: -2px; } 100% { top: 100%; } }
+    </style>
+</head>
+<body>
+    <div class="scanline"></div>
+    <div class="panel">
+        <div class="boot-line">F.R.I.D.A.Y. // FIRST-TIME CONFIGURATION</div>
+        <h1>API KEY REQUIRED</h1>
+        <p class="sub">
+            This portable build needs your Google Gemini API key to come online.
+            It will be saved to a local <b>.env</b> file next to the executable and
+            remembered for future launches.
+        </p>
+        <label for="api-key">Gemini API Key</label>
+        <input type="password" id="api-key" placeholder="Paste your key here" autocomplete="off" spellcheck="false">
+        <div class="row">
+            <button id="save-btn">Initialize System</button>
+            <button id="show-btn" class="toggle-show" title="Show/Hide key">SHOW</button>
+        </div>
+        <div id="msg" class="msg"></div>
+        <a class="get-key" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">
+            → Get a free key at aistudio.google.com/apikey
+        </a>
+    </div>
+
+    <script>
+        const input = document.getElementById('api-key');
+        const saveBtn = document.getElementById('save-btn');
+        const showBtn = document.getElementById('show-btn');
+        const msg = document.getElementById('msg');
+
+        function showMessage(text, kind) {
+            msg.textContent = text;
+            msg.className = 'msg ' + kind;
+        }
+
+        showBtn.addEventListener('click', () => {
+            const hidden = input.type === 'password';
+            input.type = hidden ? 'text' : 'password';
+            showBtn.textContent = hidden ? 'HIDE' : 'SHOW';
+        });
+
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') saveBtn.click(); });
+
+        saveBtn.addEventListener('click', async () => {
+            const apiKey = input.value.trim();
+            if (!apiKey) { showMessage('Paste your Gemini API key first.', 'error'); return; }
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Verifying…';
+            try {
+                const res = await fetch('/api/setup/key', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ api_key: apiKey })
+                });
+                const data = await res.json();
+                if (res.ok && data.status === 'SUCCESS') {
+                    showMessage(data.message || 'Key saved. Booting…', 'info');
+                    setTimeout(() => { window.location.href = '/'; }, 900);
+                } else {
+                    showMessage(data.message || 'Could not save the key.', 'error');
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = 'Initialize System';
+                }
+            } catch (err) {
+                showMessage('Connection error: ' + err, 'error');
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Initialize System';
+            }
+        });
+
+        // If the key already exists (e.g. user relaunched after saving), go home.
+        fetch('/api/setup/status').then(r => r.json()).then(data => {
+            if (!data.needs_setup) window.location.href = '/';
+        }).catch(() => {});
+    </script>
+</body>
+</html>

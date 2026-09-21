@@ -1,0 +1,12 @@
+.env
+gemini_key.txt
+.venv/
+venv/
+venv_linux/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+build/
+dist/
+friday.AppDir/
+workspace/screenshots/
